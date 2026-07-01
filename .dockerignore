@@ -1,0 +1,7 @@
+target/
+.git/
+.gitignore
+.vscode/
+*.md
+frontend/node_modules/
+frontend/dist/

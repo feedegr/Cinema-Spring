@@ -1,0 +1,37 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: cine-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: cine_db
+      POSTGRES_USER: cine_user
+      POSTGRES_PASSWORD: cine_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - cine_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cine_user -d cine_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: cine-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: cine_db
+      DB_USER: cine_user
+      DB_PASSWORD: cine_pass
+    ports:
+      - "8080:8080"
+
+volumes:
+  cine_pgdata:
