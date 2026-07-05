@@ -13,6 +13,7 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -32,10 +33,12 @@ public class Booking {
 
     private LocalDateTime bookedAt;
 
+    @NotNull
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
 
+    @NotNull
     @ManyToOne
     @JoinColumn(name = "showtime_id")
     private Showtime showtime;

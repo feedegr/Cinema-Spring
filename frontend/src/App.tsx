@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, NavLink } from "react-router-dom";
 import { MoviesPage } from "./pages/MoviesPage";
 import { CinemasPage } from "./pages/CinemasPage";
 import { ShowtimesPage } from "./pages/ShowtimesPage";
+import { ShowtimeSeatsPage } from "./pages/ShowtimeSeatsPage";
 
 const NAV_LINKS = [
   { to: "/", label: "Peliculas" },
@@ -41,6 +42,7 @@ function App() {
           <Route path="/" element={<MoviesPage />} />
           <Route path="/cinemas" element={<CinemasPage />} />
           <Route path="/showtimes" element={<ShowtimesPage />} />
+          <Route path="/showtimes/:id/seats" element={<ShowtimeSeatsPage />} />
         </Routes>
       </main>
     </BrowserRouter>

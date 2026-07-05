@@ -29,14 +29,20 @@ Paquete base: `com.grandinetti.spring.fede_proyecto_cine`
   - `Room` (nombre, capacidad) N—1 `Cinema`, 1—N `Seat`. Unique constraint **compuesta** `(cinema_id, name)` — no global — para que dos cines distintos puedan tener cada uno su propia "Sala 1".
   - `Seat` (fila, número) N—1 `Room`. Unique compuesta `(room_id, seat_row, number)`.
   - `Showtime` (horario, `language` enum `DOBLADA`/`SUBTITULADA`) N—1 `Movie`, N—1 `Room`. Unique compuesta `(movie_id, room_id, start_time)`. `language` mapeado con `@Enumerated(EnumType.STRING)` (guarda texto, no el ordinal).
-  - `Booking` N—1 `User`, N—1 `Showtime`, N—N `Seat` — **todavía sin controller**, es el próximo paso real.
+  - `Booking` N—1 `User`, N—1 `Showtime`, N—N `Seat` (`booking_seats`) — con `BookingController` + `BookingService` (ver abajo).
   - `Movie` (`title` único, `posterUrl` con placeholders de picsum.photos).
+  - `User` (`email` único además de `@Email`/`@NotBlank`) — necesario para que el usuario de prueba en `data.sql` sea idempotente.
   - Todas las unique constraints existen para que `data.sql` sea idempotente vía `ON CONFLICT DO NOTHING` (sin constraint real, ese `ON CONFLICT` no tiene nada contra qué comparar).
-  - `Room.seats` usa `@JsonManagedReference` / `Seat.room` usa `@JsonBackReference` (corta el loop infinito de serialización).
-- `repository/` — un `JpaRepository` por entidad (incluye `CinemaRepository`).
-- `controller/` — **`Movie`, `Cinema`, `Room`, `Showtime`, `Seat`** conectados de punta a punta (GET, GET/{id}, POST). Falta `Booking` y `User`.
+  - `Room.seats` usa `@JsonManagedReference` / `Seat.room` usa `@JsonBackReference` (corta el loop infinito de serialización). Mismo patrón invertido en `User.bookings` (`@JsonBackReference`, se omite) vs `Booking.user` (sin anotar, se serializa completo) — acá el lado que se quiere ver completo es el del `Booking`, no el del `User`.
+- `repository/` — un `JpaRepository` por entidad (incluye `CinemaRepository`). `BookingRepository` tiene además `findBookedSeatIds(showtimeId, seatIds)` (`@Query` JPQL) para chequear disponibilidad.
+- `controller/` — **`Movie`, `Cinema`, `Room`, `Showtime`, `Seat`, `Booking`** conectados de punta a punta (GET, GET/{id}, POST). Falta `User`.
+- `service/BookingService.java` — **primera capa `service` del proyecto**. `create()`:
+  1. Valida que `user`/`showtime` vengan en el body y que haya al menos una butaca.
+  2. Busca las entidades reales por id (`userRepository.findById(...)`, etc.) en vez de confiar en el objeto que manda el cliente — el JSON de entrada solo trae `{"id": X}`, un objeto "shell" sin el resto de los campos, y Hibernate no lo rehidrata solo para guardar la FK. Si no se buscan de nuevo, la respuesta devuelve `user`/`showtime` con todo en `null` salvo el id. Buscarlos también da un 404 prolijo si el id no existe, en vez de un error crudo de constraint de la base.
+  3. Chequea con `findBookedSeatIds` que ninguna butaca pedida esté ya reservada para esa función — si alguna lo está, `409 CONFLICT` con el detalle de cuáles.
+  4. Si todo OK, arma la `Booking` con las entidades reales, setea `bookedAt = now()` y guarda.
+  - `getSeatAvailability(showtimeId)`: devuelve las butacas de la sala de esa función con un flag `occupied` calculado (reusa `findBookedSeatIds`). Expuesto en `GET /api/showtimes/{id}/seats`, devuelve `dto.SeatAvailability` (record, no es una entidad JPA — `occupied` es un dato calculado por función, no un atributo propio de `Seat`).
 - `config/WebConfig.java` — CORS para `http://localhost:5173`.
-- Deliberadamente **sin capa `service`** — se introduce con el endpoint de `Booking` (primera lógica de negocio real: validar butacas ya reservadas).
 - `ddl-auto=update`: no apto para producción, migrar a Flyway cuando el modelo se estabilice.
 
 ### Gotcha de `data.sql`: solo agrega, nunca borra
@@ -47,7 +53,7 @@ Paquete base: `com.grandinetti.spring.fede_proyecto_cine`
 
 **Cómo detectarlo**: comparar `SELECT count(*) FROM showtimes` (o la tabla que sea) contra lo que `data.sql` realmente declara. Si no coincide, buscar la fila que no matchea ninguna línea del archivo y borrarla a mano por `id`.
 
-`data.sql` actual: 5 películas, 3 cines (Recoleta/Palermo/Belgrano) con una sala cada uno (Sala 1/2/3, 25 butacas en total), y **15 funciones** repartidas entre los 3 cines/horarios/idiomas para variedad.
+`data.sql` actual: 1 usuario de prueba (`Fede Test` / `fede@test.com`, id 1 — el frontend reserva "como" este usuario mientras no haya login real), 5 películas, 3 cines (Recoleta/Palermo/Belgrano) con una sala cada uno, y **15 funciones** repartidas entre los 3 cines/horarios/idiomas para variedad. Las butacas de cada sala se generan con `generate_series`/`unnest` (10 butacas por fila) para que coincidan exactamente con la `capacity` declarada: Sala 1 = 50 (filas A-E), Sala 2 = 30 (filas A-C), Sala 3 = 40 (filas A-D) — antes había un desfasaje (`capacity` decía un número, pero se habían sembrado menos butacas reales de las que decía).
 
 ## Cómo correr todo junto
 
@@ -65,9 +71,9 @@ Scripts individuales: `npm run dev:backend`, `npm run dev:frontend`. `npm run de
 - **Páginas**:
   - `MoviesPage` ("En cartelera") — **carrousel horizontal** (scroll-snap nativo, sin librería) con botones prev/next, cards con póster/título/género/duración/sinopsis.
   - `CinemasPage` ("Cines") — fusiona cine + sus salas (chips con capacidad). Cada card es un link a `/showtimes?cinemaId=X`.
-  - `ShowtimesPage` ("Funciones") — lee `cinemaId` de query params (`useSearchParams`) para filtrar por cine, con link "Ver todos los cines" para sacar el filtro.
+  - `ShowtimesPage` ("Funciones") — lee `cinemaId` de query params (`useSearchParams`) para filtrar por cine, con link "Ver todos los cines" para sacar el filtro. Cada fila es un `Link` a `/showtimes/:id/seats`.
+  - `ShowtimeSeatsPage` (mapa de butacas) — al clickear una función, muestra sus butacas agrupadas por fila, verde (`bg-available`) = disponible, rojo (`bg-occupied`) = ocupada (calculado server-side contra las reservas ya hechas para esa función puntual). Las butacas disponibles son clickeables (toggle verde/rojo, seleccion local con `useState<Set<number>>`); al haber al menos una seleccionada aparece el botón "Reservar N butacas", que llama a `POST /api/bookings` (`useCreateBooking`, `useMutation` de React Query) usando `TEST_USER_ID = 1` (hardcodeado, comentado en el archivo, hasta que haya login real). Al terminar la mutation (éxito o error) se invalida la query de `seatAvailability` para refrescar el mapa — importante si otro usuario reservó una butaca en el medio.
   - No hay `RoomsPage` separada — se fusionó dentro de `CinemasPage` a pedido del usuario.
-- Falta: página/flujo de reserva (selección de butacas) — depende del endpoint de `Booking`.
 
 ## Gotchas del entorno (Windows, esta máquina)
 
@@ -88,8 +94,9 @@ Scripts individuales: `npm run dev:backend`, `npm run dev:frontend`. `npm run de
 En orden de prioridad (el usuario acordó este orden):
 
 1. ~~Controllers para Room, Showtime, Seat~~ — hecho.
-2. **Endpoint de Booking real**: `POST /api/bookings` con `showtimeId` + `seatIds` + `userId`, validando que las butacas no estén ya reservadas para esa función — acá aparece la primera lógica de negocio real y el motivo para introducir la capa `service`.
-3. Frontend del flujo de reserva (selección de butacas + vista de "mis reservas").
-4. Autenticación básica (hoy `Booking.user` no tiene forma real de saber quién está logueado).
-5. Solidez técnica: tests del flujo de reserva, migrar `ddl-auto=update` a Flyway antes de tener datos reales, manejo de errores consistente (`@ControllerAdvice`, hoy un error de validación devuelve 500 en vez de 400).
+2. ~~Endpoint de Booking real~~ — hecho. `POST /api/bookings` (body: `{"user":{"id":X},"showtime":{"id":Y},"seats":[{"id":A},{"id":B}]}`), valida existencia de user/showtime/seats y rechaza butacas ya ocupadas con 409. Probado a mano con curl: reserva ok, butaca duplicada (409), user/showtime/seat inexistente (404), sin butacas (400).
+3. ~~Frontend del flujo de reserva~~ — hecho. `ShowtimeSeatsPage`: ver butacas (verde/rojo), seleccionarlas (toggle), botón "Reservar" que llama a `POST /api/bookings` de verdad y refresca el mapa. Probado end-to-end con curl simulando el POST del frontend: la reserva se crea y el mapa pasa esas butacas a ocupadas.
+   - **Falta**: vista de "mis reservas" (historial) — próximo paso natural.
+4. Autenticación básica (hoy no hay login real — `TEST_USER_ID = 1` hardcodeado en el frontend, apuntando al usuario de prueba `Fede Test` / `fede@test.com` sembrado en `data.sql`).
+5. Solidez técnica: tests del flujo de reserva, migrar `ddl-auto=update` a Flyway antes de tener datos reales, manejo de errores consistente (`@ControllerAdvice`, el resto de los controllers todavía devuelve 500 en vez de 400 ante errores de validación — `Booking` es el único con manejo de errores prolijo por ahora).
 6. ~~Conectar repositorio remoto en GitHub~~ — hecho (el usuario decidió adelantarlo antes de terminar el flujo de reserva).

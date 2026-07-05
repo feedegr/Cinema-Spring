@@ -20,6 +20,12 @@
   /* Texto secundario: gris malva apagado */
   --color-muted: #9c90a0;
 
+  /* Mapa de butacas: verde disponible / rojo ocupada, apagados para no romper el tono oscuro */
+  --color-available: #4a9d6f;
+  --color-available-dim: #2f6b49;
+  --color-occupied: #b0403f;
+  --color-occupied-dim: #7a2b2a;
+
   --font-display: "Bebas Neue", sans-serif;
   --font-body: "Inter", system-ui, sans-serif;
 }

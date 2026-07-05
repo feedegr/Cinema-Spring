@@ -3,6 +3,9 @@ package com.grandinetti.spring.fede_proyecto_cine.domain;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -33,8 +36,13 @@ public class User {
 
     @NotBlank
     @Email
+    @Column(unique = true)
     private String email;
 
+    // @JsonBackReference: al reves que en Room/Seat, aca el lado "completo" que se
+    // serializa es Booking.user (para ver quien reservo), no User.bookings - por eso
+    // se omite este lado para cortar el ciclo Booking -> user -> bookings -> Booking -> ...
+    @JsonBackReference
     @OneToMany(mappedBy = "user")
     private List<Booking> bookings = new ArrayList<>();
 }

@@ -64,29 +64,31 @@ export function ShowtimesPage() {
 
       <ul className="mt-8 flex flex-col gap-3">
         {filtered?.map((showtime) => (
-          <li
-            key={showtime.id}
-            className="flex flex-wrap items-center justify-between gap-4 rounded-lg bg-curtain-light p-4"
-          >
-            <div className="flex items-center gap-5">
-              <span className="font-display text-3xl tracking-wide text-marquee">
-                {formatTime(showtime.startTime)}
-              </span>
-              <div>
-                <p className="font-display text-xl tracking-wide text-screen">
-                  {showtime.movie.title}
-                </p>
-                <p className="text-xs uppercase tracking-widest text-muted">
-                  {showtime.room.cinema?.name} · {showtime.room.name} ·{" "}
-                  {formatDate(showtime.startTime)}
-                </p>
+          <li key={showtime.id}>
+            <Link
+              to={`/showtimes/${showtime.id}/seats`}
+              className="flex flex-wrap items-center justify-between gap-4 rounded-lg bg-curtain-light p-4 transition-colors hover:bg-curtain-lighter focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marquee"
+            >
+              <div className="flex items-center gap-5">
+                <span className="font-display text-3xl tracking-wide text-marquee">
+                  {formatTime(showtime.startTime)}
+                </span>
+                <div>
+                  <p className="font-display text-xl tracking-wide text-screen">
+                    {showtime.movie.title}
+                  </p>
+                  <p className="text-xs uppercase tracking-widest text-muted">
+                    {showtime.room.cinema?.name} · {showtime.room.name} ·{" "}
+                    {formatDate(showtime.startTime)}
+                  </p>
+                </div>
               </div>
-            </div>
-            {showtime.language && (
-              <span className="rounded-full border border-velvet-light px-3 py-1 text-xs uppercase tracking-widest text-velvet-light">
-                {LANGUAGE_LABELS[showtime.language]}
-              </span>
-            )}
+              {showtime.language && (
+                <span className="rounded-full border border-velvet-light px-3 py-1 text-xs uppercase tracking-widest text-velvet-light">
+                  {LANGUAGE_LABELS[showtime.language]}
+                </span>
+              )}
+            </Link>
           </li>
         ))}
       </ul>

@@ -7,6 +7,11 @@ INSERT INTO movies (title, duration_minutes, genre, synopsis, poster_url) VALUES
     ('Toy Story', 81, 'Animacion', 'Un vaquero de juguete siente celos cuando llega un nuevo juguete espacial que se vuelve el favorito de su dueno.', 'https://picsum.photos/seed/toystory/200/300')
 ON CONFLICT DO NOTHING;
 
+-- Usuario de prueba: todavia no hay login real, asi que el frontend reserva "como" este usuario.
+INSERT INTO users (name, email) VALUES
+    ('Fede Test', 'fede@test.com')
+ON CONFLICT DO NOTHING;
+
 INSERT INTO cinemas (name, address) VALUES
     ('Cine Recoleta', 'Av. Callao 1000'),
     ('Cine Palermo', 'Av. Santa Fe 3253'),
@@ -21,25 +26,27 @@ UNION ALL
 SELECT 'Sala 3', 40, c.id FROM cinemas c WHERE c.name = 'Cine Belgrano'
 ON CONFLICT DO NOTHING;
 
--- Sala 1 y Sala 3: filas A y B, 5 butacas cada una. Sala 2: fila A, 5 butacas.
+-- La cantidad de butacas sembradas coincide con la "capacity" declarada de cada sala
+-- (10 butacas por fila): Sala 1 = 50 (filas A-E), Sala 2 = 30 (filas A-C), Sala 3 = 40 (filas A-D).
 INSERT INTO seats (seat_row, number, room_id)
-SELECT s.seat_row, s.number, rm.id
-FROM (VALUES ('A', 1), ('A', 2), ('A', 3), ('A', 4), ('A', 5),
-             ('B', 1), ('B', 2), ('B', 3), ('B', 4), ('B', 5)) AS s(seat_row, number)
-CROSS JOIN (SELECT id FROM rooms WHERE name = 'Sala 1') rm
+SELECT row_letter, n, rm.id
+FROM (SELECT id FROM rooms WHERE name = 'Sala 1') rm,
+     unnest(ARRAY['A', 'B', 'C', 'D', 'E']) AS row_letter,
+     generate_series(1, 10) AS n
 ON CONFLICT DO NOTHING;
 
 INSERT INTO seats (seat_row, number, room_id)
-SELECT s.seat_row, s.number, rm.id
-FROM (VALUES ('A', 1), ('A', 2), ('A', 3), ('A', 4), ('A', 5)) AS s(seat_row, number)
-CROSS JOIN (SELECT id FROM rooms WHERE name = 'Sala 2') rm
+SELECT row_letter, n, rm.id
+FROM (SELECT id FROM rooms WHERE name = 'Sala 2') rm,
+     unnest(ARRAY['A', 'B', 'C']) AS row_letter,
+     generate_series(1, 10) AS n
 ON CONFLICT DO NOTHING;
 
 INSERT INTO seats (seat_row, number, room_id)
-SELECT s.seat_row, s.number, rm.id
-FROM (VALUES ('A', 1), ('A', 2), ('A', 3), ('A', 4), ('A', 5),
-             ('B', 1), ('B', 2), ('B', 3), ('B', 4), ('B', 5)) AS s(seat_row, number)
-CROSS JOIN (SELECT id FROM rooms WHERE name = 'Sala 3') rm
+SELECT row_letter, n, rm.id
+FROM (SELECT id FROM rooms WHERE name = 'Sala 3') rm,
+     unnest(ARRAY['A', 'B', 'C', 'D']) AS row_letter,
+     generate_series(1, 10) AS n
 ON CONFLICT DO NOTHING;
 
 INSERT INTO showtimes (start_time, language, movie_id, room_id)
