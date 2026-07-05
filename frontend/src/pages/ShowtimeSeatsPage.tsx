@@ -1,13 +1,8 @@
 import { useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { useShowtime } from "../hooks/useShowtime";
 import { useSeatAvailability } from "../hooks/useSeatAvailability";
-import { useCreateBooking } from "../hooks/useCreateBooking";
 import type { SeatAvailability } from "../types/SeatAvailability";
-
-// Todavia no hay login: el frontend reserva "como" este usuario de prueba
-// (sembrado en data.sql). Se reemplaza cuando exista autenticacion real.
-const TEST_USER_ID = 1;
 
 function formatDateTime(startTime: string) {
   return new Date(startTime).toLocaleString("es-AR", {
@@ -29,11 +24,11 @@ function groupByRow(seats: SeatAvailability[]) {
 export function ShowtimeSeatsPage() {
   const { id } = useParams<{ id: string }>();
   const showtimeId = Number(id);
+  const navigate = useNavigate();
 
   const { data: showtime, isLoading: loadingShowtime, isError: errorShowtime } = useShowtime(showtimeId);
   const { data: seats, isLoading: loadingSeats, isError: errorSeats } = useSeatAvailability(showtimeId);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
-  const booking = useCreateBooking(showtimeId);
 
   function toggleSeat(seat: SeatAvailability) {
     if (seat.occupied) return;
@@ -48,11 +43,8 @@ export function ShowtimeSeatsPage() {
     });
   }
 
-  function handleReserve() {
-    booking.mutate(
-      { userId: TEST_USER_ID, showtimeId, seatIds: [...selectedIds] },
-      { onSuccess: () => setSelectedIds(new Set()) }
-    );
+  function handleContinue() {
+    navigate(`/showtimes/${showtimeId}/checkout`, { state: { seatIds: [...selectedIds] } });
   }
 
   if (loadingShowtime || loadingSeats) return <p className="text-muted">Cargando butacas...</p>;
@@ -120,21 +112,11 @@ export function ShowtimeSeatsPage() {
       {selectedIds.size > 0 && (
         <button
           type="button"
-          onClick={handleReserve}
-          disabled={booking.isPending}
-          className="mt-8 rounded-full bg-marquee px-6 py-2 text-sm font-semibold uppercase tracking-widest text-curtain transition-colors hover:bg-marquee-dim focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marquee focus-visible:ring-offset-2 focus-visible:ring-offset-curtain disabled:opacity-50"
+          onClick={handleContinue}
+          className="mt-8 rounded-full bg-marquee px-6 py-2 text-sm font-semibold uppercase tracking-widest text-curtain transition-colors hover:bg-marquee-dim focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marquee focus-visible:ring-offset-2 focus-visible:ring-offset-curtain"
         >
-          {booking.isPending
-            ? "Reservando..."
-            : `Reservar ${selectedIds.size} butaca${selectedIds.size > 1 ? "s" : ""}`}
+          Continuar con {selectedIds.size} butaca{selectedIds.size > 1 ? "s" : ""}
         </button>
-      )}
-
-      {booking.isSuccess && (
-        <p className="mt-4 text-sm text-available">¡Reserva confirmada!</p>
-      )}
-      {booking.isError && (
-        <p className="mt-4 text-sm text-occupied">{(booking.error as Error).message}</p>
       )}
     </div>
   );

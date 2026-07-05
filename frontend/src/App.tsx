@@ -3,6 +3,7 @@ import { MoviesPage } from "./pages/MoviesPage";
 import { CinemasPage } from "./pages/CinemasPage";
 import { ShowtimesPage } from "./pages/ShowtimesPage";
 import { ShowtimeSeatsPage } from "./pages/ShowtimeSeatsPage";
+import { CheckoutPage } from "./pages/CheckoutPage";
 
 const NAV_LINKS = [
   { to: "/", label: "Peliculas" },
@@ -43,6 +44,7 @@ function App() {
           <Route path="/cinemas" element={<CinemasPage />} />
           <Route path="/showtimes" element={<ShowtimesPage />} />
           <Route path="/showtimes/:id/seats" element={<ShowtimeSeatsPage />} />
+          <Route path="/showtimes/:id/checkout" element={<CheckoutPage />} />
         </Routes>
       </main>
     </BrowserRouter>
