@@ -4,4 +4,5 @@ export interface Movie {
   durationMinutes: number | null;
   genre: string | null;
   synopsis: string | null;
+  posterUrl: string | null;
 }

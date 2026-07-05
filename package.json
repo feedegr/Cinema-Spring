@@ -1,0 +1,14 @@
+{
+  "name": "fede-proyecto-cine-dev",
+  "private": true,
+  "description": "Scripts para levantar backend + frontend juntos en desarrollo (usa el Postgres nativo, no Docker)",
+  "scripts": {
+    "dev": "concurrently -n backend,frontend -c green,magenta \"npm:dev:backend\" \"npm:dev:frontend\"",
+    "dev:db": "docker compose up db",
+    "dev:backend": "set \"JAVA_HOME=C:\\Program Files\\Java\\jdk-21.0.11\" && .\\mvnw.cmd spring-boot:run",
+    "dev:frontend": "npm run dev --prefix frontend"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0"
+  }
+}

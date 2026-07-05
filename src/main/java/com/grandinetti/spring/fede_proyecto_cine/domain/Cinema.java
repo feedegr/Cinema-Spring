@@ -13,12 +13,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "movies")
+@Table(name = "cinemas")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Movie {
+public class Cinema {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,14 +26,7 @@ public class Movie {
 
     @NotBlank
     @Column(unique = true)
-    private String title;
+    private String name;
 
-    private Integer durationMinutes;
-
-    private String genre;
-
-    @Column(length = 2000)
-    private String synopsis;
-
-    private String posterUrl;
+    private String address;
 }
