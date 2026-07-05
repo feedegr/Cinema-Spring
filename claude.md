@@ -1,6 +1,6 @@
 # fede-proyecto-cine
 
-Sistema de reservas de cine. Backend Spring Boot + PostgreSQL + Hibernate, frontend React + Vite + Tailwind + React Query + React Router. Git local, GitHub todavía no conectado (sin remoto, sin push).
+Sistema de reservas de cine. Backend Spring Boot + PostgreSQL + Hibernate, frontend React + Vite + Tailwind + React Query + React Router. Conectado a GitHub: remoto `origin` → https://github.com/feedegr/Cinema-Spring.git, rama `master`.
 
 El usuario (feedecs96@gmail.com) es nuevo en Java/Spring Boot y en VSCode para este stack, pero no en programación en general. Explicar el "por qué" de las decisiones de Spring/Hibernate, no solo el "qué" — lo pidió explícitamente.
 
@@ -92,4 +92,4 @@ En orden de prioridad (el usuario acordó este orden):
 3. Frontend del flujo de reserva (selección de butacas + vista de "mis reservas").
 4. Autenticación básica (hoy `Booking.user` no tiene forma real de saber quién está logueado).
 5. Solidez técnica: tests del flujo de reserva, migrar `ddl-auto=update` a Flyway antes de tener datos reales, manejo de errores consistente (`@ControllerAdvice`, hoy un error de validación devuelve 500 en vez de 400).
-6. Conectar repositorio remoto en GitHub (a propósito todavía no, esperar a que el flujo de reserva básico esté probado).
+6. ~~Conectar repositorio remoto en GitHub~~ — hecho (el usuario decidió adelantarlo antes de terminar el flujo de reserva).
