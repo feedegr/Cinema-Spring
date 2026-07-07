@@ -7,9 +7,15 @@ INSERT INTO movies (title, duration_minutes, genre, synopsis, poster_url) VALUES
     ('Toy Story', 81, 'Animacion', 'Un vaquero de juguete siente celos cuando llega un nuevo juguete espacial que se vuelve el favorito de su dueno.', 'https://picsum.photos/seed/toystory/200/300')
 ON CONFLICT DO NOTHING;
 
--- Usuario de prueba: todavia no hay login real, asi que el frontend reserva "como" este usuario.
-INSERT INTO users (name, email) VALUES
-    ('Fede Test', 'fede@test.com')
+-- Usuarios de prueba sembrados de entrada (el resto se crean via /api/auth/signup, ahi
+-- quedan como USER por default). Todos comparten la misma contrasena en texto plano
+-- para loguearse: cine1234 (el hash de abajo es BCrypt de esa contrasena, generado una
+-- sola vez con jshell - se repite igual para los 4, no hace falta uno distinto por fila).
+INSERT INTO users (name, email, password, role) VALUES
+    ('Fede Test', 'fede@test.com', '$2a$10$9fjoPByr/GnSzMmrdT8RRONWYRDNsxfi61G9w6wD2gHXDWYhv6j4O', 'ADMIN'),
+    ('Ana Gomez', 'ana@test.com', '$2a$10$9fjoPByr/GnSzMmrdT8RRONWYRDNsxfi61G9w6wD2gHXDWYhv6j4O', 'USER'),
+    ('Lucas Perez', 'lucas@test.com', '$2a$10$9fjoPByr/GnSzMmrdT8RRONWYRDNsxfi61G9w6wD2gHXDWYhv6j4O', 'USER'),
+    ('Sofia Ruiz', 'sofia@test.com', '$2a$10$9fjoPByr/GnSzMmrdT8RRONWYRDNsxfi61G9w6wD2gHXDWYhv6j4O', 'USER')
 ON CONFLICT DO NOTHING;
 
 INSERT INTO cinemas (name, address) VALUES

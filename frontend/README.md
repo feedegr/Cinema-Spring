@@ -1,32 +1,18 @@
-# React + TypeScript + Vite
+# fede-proyecto-cine — frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Frontend del sistema de reservas de cine. React + Vite + TypeScript + Tailwind CSS v4 + React Query + React Router.
 
-Currently, two official plugins are available:
+Corre junto al backend con `npm run dev` desde la raíz del proyecto (ver `claude.md` en la raíz para más detalle del stack completo).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Usuarios de prueba
 
-## React Compiler
+Sembrados en `data.sql` del backend, todos con la misma contraseña:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| Nombre      | Email             | Contraseña | Rol   |
+|-------------|-------------------|------------|-------|
+| Fede Test   | fede@test.com     | cine1234   | ADMIN |
+| Ana Gomez   | ana@test.com      | cine1234   | USER  |
+| Lucas Perez | lucas@test.com    | cine1234   | USER  |
+| Sofia Ruiz  | sofia@test.com    | cine1234   | USER  |
 
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
-```
-
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+También se puede crear una cuenta nueva desde "Registrarse" — queda como `USER` por default.

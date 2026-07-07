@@ -4,9 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -38,6 +41,17 @@ public class User {
     @Email
     @Column(unique = true)
     private String email;
+
+    // Hash BCrypt, nunca la contraseña en texto plano. @JsonIgnore para que jamas
+    // salga en una respuesta JSON (Booking.user serializa el User completo, sin esto
+    // el hash quedaria expuesto en cualquier /api/bookings).
+    @NotBlank
+    @JsonIgnore
+    private String password;
+
+    // STRING (no ORDINAL): guarda "ADMIN"/"USER" como texto, no la posicion del enum.
+    @Enumerated(EnumType.STRING)
+    private Role role = Role.USER;
 
     // @JsonBackReference: al reves que en Room/Seat, aca el lado "completo" que se
     // serializa es Booking.user (para ver quien reservo), no User.bookings - por eso

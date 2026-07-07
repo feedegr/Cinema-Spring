@@ -3,13 +3,10 @@ import { useParams, useLocation, useNavigate, Link } from "react-router-dom";
 import { useShowtime } from "../hooks/useShowtime";
 import { useSeatAvailability } from "../hooks/useSeatAvailability";
 import { useCreateBooking } from "../hooks/useCreateBooking";
+import { useAuth } from "../context/AuthContext";
 
 // Cuanto se muestra la pantalla de confirmacion antes de mandar sola al home.
 const REDIRECT_DELAY_MS = 2500;
-
-// Todavia no hay login: el frontend reserva "como" este usuario de prueba
-// (sembrado en data.sql). Se reemplaza cuando exista autenticacion real.
-const TEST_USER_ID = 1;
 
 // Precio ficticio, solo para mostrar un total en el resumen - no existe un campo
 // de precio en el modelo (Movie/Showtime), no se persiste en ningun lado.
@@ -32,6 +29,7 @@ export function CheckoutPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const seatIds: number[] = location.state?.seatIds ?? [];
+  const { user } = useAuth();
 
   const { data: showtime, isLoading: loadingShowtime, isError: errorShowtime } = useShowtime(showtimeId);
   const { data: seats, isLoading: loadingSeats, isError: errorSeats } = useSeatAvailability(showtimeId);
@@ -54,6 +52,17 @@ export function CheckoutPage() {
     );
   }
 
+  if (!user) {
+    return (
+      <div className="flex flex-col items-center gap-3 text-center">
+        <p className="text-muted">Iniciá sesión para completar tu compra.</p>
+        <Link to={`/showtimes/${showtimeId}/seats`} className="text-xs uppercase tracking-widest text-marquee">
+          ← Volver a elegir butacas
+        </Link>
+      </div>
+    );
+  }
+
   if (loadingShowtime || loadingSeats) return <p className="text-muted">Cargando resumen...</p>;
   if (errorShowtime || errorSeats || !showtime)
     return (
@@ -64,9 +73,10 @@ export function CheckoutPage() {
 
   const selectedSeats = (seats ?? []).filter((seat) => seatIds.includes(seat.id));
   const total = selectedSeats.length * PRICE_PER_SEAT;
+  const userId = user.id;
 
   function handlePay() {
-    booking.mutate({ userId: TEST_USER_ID, showtimeId, seatIds });
+    booking.mutate({ userId, showtimeId, seatIds });
   }
 
   if (booking.isSuccess) {

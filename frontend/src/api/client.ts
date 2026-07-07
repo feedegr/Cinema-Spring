@@ -4,6 +4,7 @@ import type { Movie } from "../types/Movie";
 import type { Room } from "../types/Room";
 import type { SeatAvailability } from "../types/SeatAvailability";
 import type { Showtime } from "../types/Showtime";
+import type { User } from "../types/User";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
 
@@ -40,6 +41,38 @@ export async function getShowtime(id: number): Promise<Showtime> {
 export async function getSeatAvailability(showtimeId: number): Promise<SeatAvailability[]> {
   const res = await fetch(`${API_URL}/api/showtimes/${showtimeId}/seats`);
   if (!res.ok) throw new Error("Failed to fetch seat availability");
+  return res.json();
+}
+
+export async function getBookingsByUser(userId: number): Promise<Booking[]> {
+  const res = await fetch(`${API_URL}/api/bookings?userId=${userId}`);
+  if (!res.ok) throw new Error("Failed to fetch bookings");
+  return res.json();
+}
+
+export async function login(email: string, password: string): Promise<User> {
+  const res = await fetch(`${API_URL}/api/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(body?.message ?? "No se pudo iniciar sesión");
+  }
+  return res.json();
+}
+
+export async function signup(name: string, email: string, password: string): Promise<User> {
+  const res = await fetch(`${API_URL}/api/auth/signup`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, email, password }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(body?.message ?? "No se pudo crear la cuenta");
+  }
   return res.json();
 }
 

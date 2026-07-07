@@ -14,4 +14,6 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     // Lista vacia = todas las butacas pedidas estan libres.
     @Query("SELECT s.id FROM Booking b JOIN b.seats s WHERE b.showtime.id = :showtimeId AND s.id IN :seatIds")
     List<Long> findBookedSeatIds(@Param("showtimeId") Long showtimeId, @Param("seatIds") List<Long> seatIds);
+
+    List<Booking> findByUserIdOrderByBookedAtDesc(Long userId);
 }
