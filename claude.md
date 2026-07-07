@@ -103,3 +103,16 @@ En orden de prioridad (el usuario acordó este orden):
 4. Autenticación básica (hoy no hay login real — `TEST_USER_ID = 1` hardcodeado en el frontend, apuntando al usuario de prueba `Fede Test` / `fede@test.com` sembrado en `data.sql`).
 5. Solidez técnica: tests del flujo de reserva, migrar `ddl-auto=update` a Flyway antes de tener datos reales, manejo de errores consistente (`@ControllerAdvice`, el resto de los controllers todavía devuelve 500 en vez de 400 ante errores de validación — `Booking` es el único con manejo de errores prolijo por ahora), y el holding de butacas durante checkout (punto 3).
 6. ~~Conectar repositorio remoto en GitHub~~ — hecho (el usuario decidió adelantarlo antes de terminar el flujo de reserva).
+
+## Backlog de ideas (funcionalidades futuras, sin orden ni prioridad)
+
+Anotado por el usuario para hacer crecer el proyecto más adelante, no forman parte del roadmap ordenado de arriba todavía:
+
+- Distintos precios por función/sala (hoy `PRICE_PER_SEAT = 3000` es una constante fija en el frontend, no existe el concepto de precio en el modelo de datos).
+- Descuentos y promociones.
+- Funciones 2D / 3D (nuevo atributo de `Showtime`, similar a como `language` distingue DOBLADA/SUBTITULADA).
+- Salas VIP (probablemente un atributo de `Room`, posiblemente ligado a un precio distinto).
+- Venta de snacks/combos.
+- QR del ticket.
+- Envío de la entrada por email.
+- Código de compra (identificador corto y humano para cada `Booking`, distinto del `id` interno).
